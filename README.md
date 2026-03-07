@@ -1,67 +1,154 @@
-# Payload Blank Template
+# Dynamic Workflow Management System
 
-This template comes configured with the bare minimum to get started on anything you need.
+Built with Payload CMS v3, Node.js, and MongoDB
 
-## Quick start
+## What is this?
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+A dynamic workflow management system where admins can create multi-stage approval workflows and attach them to any collection (Blogs, Contracts, etc.) directly from the Admin UI - no code changes needed.
 
-## Quick Start - local setup
+## Features
 
-To spin up this template locally, follow these steps:
+- Dynamic workflow creation from Admin UI
+- Multi-stage approval system
+- Works for any collection (Blogs, Contracts)
+- Immutable audit trail (WorkflowLogs)
+- Custom REST APIs for workflow status and triggering
+- Email notifications (simulated via console logs)
 
-### Clone
+## Project Structure
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+```
+src/
+├── collections/
+│   ├── Blogs.ts          # Blog collection with approval hooks + custom endpoints
+│   ├── Contracts.ts      # Contract collection with approval hooks
+│   ├── Workflows.ts      # Dynamic workflow definitions
+│   ├── WorkflowLogs.ts   # Immutable audit trail
+│   └── Users.ts          # Authentication
+├── endpoints/
+│   └── workflows.ts      # Custom REST API handlers
+└── payload.config.ts     # Main Payload configuration
+```
 
-### Development
+## Architecture
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+- **Collections** - Define data structure (like MongoDB schemas)
+- **Hooks** - `beforeChange` hook handles approval logic automatically
+- **Relationships** - Blogs/Contracts link to Workflows dynamically
+- **WorkflowLogs** - Append-only audit trail (update/delete disabled)
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+## How Workflows Work
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+```
+1. Admin creates a Workflow with stages from UI
+2. Writer creates a Blog/Contract and selects a Workflow
+3. Reviewer opens the document, selects "Approve" and saves
+4. Hook runs automatically → moves to next stage
+5. After all stages approved → status becomes "Approved"
+6. Every action is logged in WorkflowLogs
+```
 
-#### Docker (Optional)
+## Setup Instructions
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+### Requirements
 
-To do so, follow these steps:
+- Node.js v22+
+- MongoDB (local or Atlas)
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+### Installation
 
-## How it works
+```bash
+# Clone the repository
+git clone YOUR_REPO_URL
+cd payload-workflow
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+# Install dependencies
+npm install
+```
 
-### Collections
+### Environment Variables
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+Create `.env` file in root:
 
-- #### Users (Authentication)
+```
+DATABASE_URL=mongodb://127.0.0.1/payload-workflow
+PAYLOAD_SECRET=your-secret-key-here
+```
 
-  Users are auth-enabled collections that have access to the admin panel.
+### Run the project
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/main/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+```bash
+npm run dev
+```
 
-- #### Media
+Open: `http://localhost:3000/admin`
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+## Demo Credentials
 
-### Docker
+```
+Email:    admin@gmail.com
+Password: admin@123
+```
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+## Sample Workflow Setup
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+1. Login to admin panel
+2. Go to **Workflows** → Create New
+3. Add name: `Blog Approval Process`
+4. Add stages:
+   - Stage 1: "Editor Review" → assign to admin
+   - Stage 2: "Final Approval" → assign to admin
+5. Save workflow
+6. Go to **Blogs** → Create New Blog
+7. Select the workflow you just created
+8. Save the blog
+9. Edit the blog → change Action to "Approve" → Save
+10. Watch `currentStage` increment!
 
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+## Custom APIs
 
-## Questions
+### Get Workflow Status
 
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+```
+GET /api/blogs/:docId/status
+
+Response:
+{
+  "docId": "...",
+  "status": "pending",
+  "currentStage": 1,
+  "totalStages": 2,
+  "currentStageName": "Final Approval",
+  "workflowName": "Blog Approval Process"
+}
+```
+
+### Trigger Workflow Manually
+
+```
+POST /api/blogs/trigger
+
+Body:
+{
+  "docId": "document-id",
+  "workflowId": "workflow-id"
+}
+
+Response:
+{
+  "message": "Workflow triggered successfully"
+}
+```
+
+## Deployment
+Deployment was planned for Vercel but not implemented 
+within the given time. Local setup instructions above 
+are fully functional.
+
+## What I Learned
+
+- Payload CMS v3 collections, fields, and hooks
+- beforeChange hooks for automatic workflow logic
+- Dynamic data modeling for reusable systems
+- Custom endpoint registration in Payload v3
+- Immutable collections using access control
