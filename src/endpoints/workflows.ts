@@ -9,7 +9,7 @@ export const triggerWorkflow: Endpoint['handler'] = async (req) => {
   }
 
   const doc = await req.payload.findByID({
-    collection,
+    collection: collection as any,
     id: docId,
   })
 
@@ -18,7 +18,7 @@ export const triggerWorkflow: Endpoint['handler'] = async (req) => {
   }
 
   await req.payload.update({
-    collection,
+    collection: collection as any,
     id: docId,
     data: {
       workflow: workflowId,
@@ -35,7 +35,7 @@ export const getWorkflowStatus: Endpoint['handler'] = async (req) => {
   const collection = (req.query?.collection as string) || 'blogs'
 
   const doc = await req.payload.findByID({
-    collection,
+    collection: collection as any,
     id: docId,
     depth: 2,
   })

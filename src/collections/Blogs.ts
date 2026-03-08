@@ -102,7 +102,7 @@ export const Blogs: CollectionConfig = {
         { label: 'Reject', value: 'reject' },
       ],
       defaultValue: 'none',
-      validate: (value: any) => true,
+      validate: (value: any): true | string => true,
     },
     {
       name: 'approvalHistory',
