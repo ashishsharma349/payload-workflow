@@ -6,8 +6,8 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Users } from './collections/Users'
-import {Workflows} from './collections/Workflow'  
-import { Blogs } from './collections/Blogs' 
+import { Workflows } from './collections/Workflow'
+import { Blogs } from './collections/Blogs'
 import { WorkflowLogs } from './collections/WorkflowLogs'
 import { Contracts } from './collections/Contracts'
 import { triggerWorkflow, getWorkflowStatus } from './endpoints/workflows'
@@ -30,23 +30,20 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   endpoints: [
-  {
-    path: '/workflows/trigger',
-    method: 'post',
-    handler: triggerWorkflow,
-  },
-  {
-    path: '/workflows/status/:docId',
-    method: 'get',
-    handler: getWorkflowStatus,
-  },
-],
+    {
+      path: '/workflows/trigger',
+      method: 'post',
+      handler: triggerWorkflow,
+    },
+    {
+      path: '/workflows/status/:docId',
+      method: 'get',
+      handler: getWorkflowStatus,
+    },
+  ],
   db: mongooseAdapter({
-    url: process.env.DATABASE_URL || '',
+    url: process.env.DATABASE_URI || '',
   }),
   sharp,
   plugins: [],
 })
-
-
-// inside buildConfig, add endpoints:
