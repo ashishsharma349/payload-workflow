@@ -42,7 +42,8 @@ export const Blogs: CollectionConfig = {
       path: '/trigger',
       method: 'post',
       handler: async (req) => {
-        const body = await req.json()
+        // const body = await req.json()
+        const body = await req.json?.() ?? {}
         const { docId, workflowId } = body
 
         if (!docId || !workflowId) {
